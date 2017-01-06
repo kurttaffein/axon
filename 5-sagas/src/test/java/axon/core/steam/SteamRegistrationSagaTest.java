@@ -1,12 +1,13 @@
 package axon.core.steam;
 
+import axon.core.game.event.GameRegisteredEvent;
 import axon.core.infrastructure.steam.SteamGatewayMock;
 import axon.core.user.event.GameBoughtEvent;
+import axon.core.user.event.SteamAccountLinkedEvent;
 import org.axonframework.test.saga.AnnotatedSagaTestFixture;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public class SteamRegistrationSagaTest {
@@ -20,13 +21,15 @@ public class SteamRegistrationSagaTest {
     private AnnotatedSagaTestFixture fixture;
 
     private SteamGatewayMock steamGatewayMock = new SteamGatewayMock();
-    private SteamIdLookupStub steamIdLookupStub = new SteamIdLookupStub();
+    private SteamIdLookup steamIdLookup = new SteamIdLookup();
 
     @Before
     public void setUp() {
         fixture = new AnnotatedSagaTestFixture(SteamRegistrationSaga.class);
         fixture.registerResource(steamGatewayMock);
-        fixture.registerResource(steamIdLookupStub);
+        fixture.registerResource(steamIdLookup);
+
+        steamIdLookup.gameRegisteredEvent(new GameRegisteredEvent(GAME_ID, GAME_STEAM_ID, GAME_NAME));
     }
 
     //1 USER AGGREGATE
@@ -37,7 +40,7 @@ public class SteamRegistrationSagaTest {
 
     @Test
     public void givenAUserWithoutSteamId_whenTheUsersBuysAGame_thenSteamIsNotNotified() throws Exception {
-        fixture.whenPublishingA(new GameBoughtEvent(/* TODO */))
+        fixture.whenPublishingA(new GameBoughtEvent(USER_ID, GAME_ID))
                 .expectActiveSagas(1);
 
         steamGatewayMock.assertNoGameRegistered();
@@ -45,8 +48,8 @@ public class SteamRegistrationSagaTest {
 
     @Test
     public void givenAUserWithoutSteamId_thatBoughtAGame_whenTheUserLinksHisSteamAccount_thenSteamIsNotified() throws Exception {
-        fixture.givenAPublished(new GameBoughtEvent(/* TODO */))
-                .whenPublishingA(null) //TODO Link steam account
+        fixture.givenAPublished(new GameBoughtEvent(USER_ID, GAME_ID))
+                .whenPublishingA(new SteamAccountLinkedEvent(USER_ID, USER_STEAM_ID)) //TODO Link steam account
                 .expectActiveSagas(0);
 
         steamGatewayMock.assertRegistered(USER_STEAM_ID, GAME_STEAM_ID);
@@ -54,32 +57,11 @@ public class SteamRegistrationSagaTest {
 
     @Test
     public void givenAUserWithSteamId_whenTheUserBuysAGame_thenSteamIsNotified() throws Exception {
-        steamIdLookupStub.registerUser();
-        fixture.whenPublishingA(new GameBoughtEvent(/* TODO */))
+        steamIdLookup.steamAccountLinked(new SteamAccountLinkedEvent(USER_ID, USER_STEAM_ID));
+        fixture.whenPublishingA(new GameBoughtEvent(USER_ID, GAME_ID))
                 .expectActiveSagas(0);
 
         steamGatewayMock.assertRegistered(USER_STEAM_ID, GAME_STEAM_ID);
     }
 
-    //6 TODO
-
-    private static class SteamIdLookupStub extends SteamIdLookup {
-        private boolean userRegistered = false;
-
-        public void registerUser() {
-            userRegistered = true;
-        }
-
-        public Optional<String> getSteamAccountIdForUser(UUID userId) {
-            if(userRegistered) {
-                return Optional.of(USER_STEAM_ID);
-            } else {
-                return Optional.empty();
-            }
-        }
-
-        public String getSteamGameIdForGame(UUID gameId) {
-            return GAME_STEAM_ID;
-        }
-    }
 }

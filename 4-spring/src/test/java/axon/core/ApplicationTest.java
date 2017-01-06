@@ -21,7 +21,6 @@ public class ApplicationTest {
     @Before
     public void setup() {
         application.setMailClient(mailCientMock);
-        application.init();
     }
 
     //1 USER AGGREGATE

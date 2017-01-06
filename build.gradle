@@ -24,6 +24,8 @@ allprojects {
         compile('org.apache.commons:commons-lang3:3.0')
         compile('org.axonframework:axon-core:2.4.4')
         compile('org.springframework.shell:spring-shell:1.1.0.RELEASE')
+        compile('org.springframework:spring-jdbc:4.0.3.RELEASE')
+        compile('org.xerial:sqlite-jdbc:3.15.1')
 
         testCompile('org.axonframework:axon-test:2.4.4')
         testCompile('junit:junit:4.12')

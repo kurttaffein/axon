@@ -40,7 +40,7 @@ public class Main {
         String name = input("Name");
         String email = input("E-mail");
 
-        RegisterUserCommand registerUserCommand = new RegisterUserCommand(name); //TODO
+        RegisterUserCommand registerUserCommand = new RegisterUserCommand(name, email); //TODO
         output("Creating user with UUID", registerUserCommand.getUuid());
 
         UUID uuid = application.execute(registerUserCommand);

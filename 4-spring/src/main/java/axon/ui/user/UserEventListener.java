@@ -15,11 +15,6 @@ public class UserEventListener {
     @Autowired
     private UserDTORepository userDTORepository;
 
-    @PostConstruct
-    public void register() {
-        application.registerListener(this);
-    }
-
     @EventHandler
     public void userRegistered(UserRegisteredEvent userRegisteredEvent) {
         UserDTO userDTO = new UserDTO(

@@ -14,40 +14,23 @@ import org.axonframework.eventsourcing.EventSourcingRepository;
 import org.axonframework.eventstore.EventStore;
 import org.axonframework.eventstore.fs.FileSystemEventStore;
 import org.axonframework.eventstore.fs.SimpleEventFileResolver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 
+@Component
 public class Application {
+    @Autowired
     private CommandGateway commandGateway;
-    private EventBus eventBus;
     private MailClient mailClient;
 
     public Application() {
         mailClient = new VirtualMailServer();
     }
 
-    public void init() {
-        CommandBus commandBus = new SimpleCommandBus();
-
-        eventBus = new SimpleEventBus();
-
-        EventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(new File("events")));
-        EventSourcingRepository<User> eventSourcedUserRepository = new EventSourcingRepository<>(User.class, eventStore);
-        eventSourcedUserRepository.setEventBus(eventBus);
-
-        AggregateAnnotationCommandHandler.subscribe(User.class, eventSourcedUserRepository, commandBus);
-
-        this.commandGateway = new DefaultCommandGateway(commandBus);
-
-        AnnotationEventListenerAdapter.subscribe(new MailSendingEventListener(mailClient), eventBus);
-    }
-
     public <T> T execute(Object command) {
         return commandGateway.sendAndWait(command);
-    }
-
-    public void registerListener(Object listener) {
-        AnnotationEventListenerAdapter.subscribe(listener, eventBus);
     }
 
     /**

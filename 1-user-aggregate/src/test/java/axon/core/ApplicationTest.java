@@ -3,6 +3,7 @@ package axon.core;
 import axon.core.Application;
 import axon.core.User;
 import axon.core.command.RegisterUserCommand;
+import axon.core.command.UpdateEmailCommand;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,26 +26,27 @@ public class ApplicationTest {
     //1 USER AGGREGATE
     @Test
     public void iCanRegisterAUsersWithANameAndAnEmailAddress() throws Exception {
-        RegisterUserCommand command = new RegisterUserCommand(NAME); //TODO
+        RegisterUserCommand command = new RegisterUserCommand(NAME, OLD_EMAIL_ADDRESS); //TODO
         UUID uuid = command.getUuid();
 
         application.execute(command);
         User user = application.getUser(uuid);
         assertThat(user.getName()).isEqualTo(NAME);
-        assertThat(user.getEmailAddress()).isEqualTo(NEW_EMAIL_ADDRESS);
+        assertThat(user.getEmail()).isEqualTo(OLD_EMAIL_ADDRESS);
     }
 
     @Test
     public void iCanUpdateTheEmailAddress() throws Exception {
-        RegisterUserCommand command = new RegisterUserCommand(NAME); //TODO
-        UUID uuid = command.getUuid();
+        RegisterUserCommand registerUserCommand = new RegisterUserCommand(NAME, OLD_EMAIL_ADDRESS);
+        UpdateEmailCommand updateEmailCommand = new UpdateEmailCommand(registerUserCommand.getUuid(), NEW_EMAIL_ADDRESS);
+        UUID uuid = registerUserCommand.getUuid();
 
-        application.execute(command);
+        application.execute(registerUserCommand);
         User user = application.getUser(uuid);
-        assertThat(user.getEmailAddress()).isEqualTo(OLD_EMAIL_ADDRESS);
+        assertThat(user.getEmail()).isEqualTo(OLD_EMAIL_ADDRESS);
 
-        application.execute(null); //TODO
+        application.execute(updateEmailCommand); //TODO
         user = application.getUser(uuid);
-        assertThat(user.getEmailAddress()).isEqualTo(NEW_EMAIL_ADDRESS);
+        assertThat(user.getEmail()).isEqualTo(NEW_EMAIL_ADDRESS);
     }
 }

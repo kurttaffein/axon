@@ -1,23 +1,28 @@
 package axon.core.user;
 
+import axon.core.user.command.BuyGameCommand;
+import axon.core.user.command.LinkSteamAccountCommand;
 import axon.core.user.command.RegisterUserCommand;
 import axon.core.user.command.UpdateEmailAddressCommand;
 import axon.core.user.event.EmailAddressUpdatedEvent;
+import axon.core.user.event.GameBoughtEvent;
+import axon.core.user.event.SteamAccountLinkedEvent;
 import axon.core.user.event.UserRegisteredEvent;
+import axon.core.user.exception.GameAlreadyBoughtException;
 import org.axonframework.commandhandling.annotation.CommandHandler;
 import org.axonframework.common.Assert;
 import org.axonframework.eventsourcing.annotation.AbstractAnnotatedAggregateRoot;
 import org.axonframework.eventsourcing.annotation.AggregateIdentifier;
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class User extends AbstractAnnotatedAggregateRoot<UUID> {
     @AggregateIdentifier
     private UUID userId;
-
-    private String name;
-    private String emailAddress;
+    private List<UUID> games = new ArrayList<>();
 
     public User() {}
 
@@ -35,23 +40,10 @@ public class User extends AbstractAnnotatedAggregateRoot<UUID> {
         apply(userRegisteredEvent);
     }
 
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
 
     @EventSourcingHandler
     public void userRegistered(UserRegisteredEvent userRegisteredEvent) {
         this.userId = userRegisteredEvent.getUserId();
-        this.name = userRegisteredEvent.getName();
-        this.emailAddress = userRegisteredEvent.getEmailAddress();
     }
 
     @CommandHandler
@@ -67,9 +59,38 @@ public class User extends AbstractAnnotatedAggregateRoot<UUID> {
 
     @EventSourcingHandler
     public void emailAddressUpdated(EmailAddressUpdatedEvent emailAddressUpdatedEvent) {
-        this.emailAddress = emailAddressUpdatedEvent.getNewEmailAddress();
     }
 
-    //TODO Buy games
-    //TODO Link Steam account
+    @CommandHandler
+    public void buyGame(BuyGameCommand buyGameCommand) {
+        UUID userId = buyGameCommand.getUserId();
+        UUID gameId = buyGameCommand.getGameId();
+
+        Assert.notNull(userId, "UserId can not be null");
+        Assert.notNull(gameId, "GameId can not be null");
+
+        if (games.contains(gameId)) {
+            throw new GameAlreadyBoughtException();
+        } else {
+            GameBoughtEvent gameBoughtEvent = new GameBoughtEvent(userId, gameId);
+            apply(gameBoughtEvent);
+        }
+    }
+
+    @EventSourcingHandler
+    public void gameBought(GameBoughtEvent gameBoughtEvent) {
+        games.add(gameBoughtEvent.getGameId());
+    }
+
+    @CommandHandler
+    public void linkSteamAccount(LinkSteamAccountCommand linkSteamAccountCommand) {
+        UUID userId = linkSteamAccountCommand.getUserId();
+        String steamUserId = linkSteamAccountCommand.getSteamUserId();
+
+        Assert.notNull(userId, "UserId can not be null");
+        Assert.notEmpty(steamUserId, "SteamUserId can not be null");
+
+        SteamAccountLinkedEvent steamAccountLinkedEvent = new SteamAccountLinkedEvent(userId, steamUserId);
+        apply(steamAccountLinkedEvent);
+    }
 }

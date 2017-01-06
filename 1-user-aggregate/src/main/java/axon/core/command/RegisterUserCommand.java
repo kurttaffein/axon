@@ -6,9 +6,11 @@ public class RegisterUserCommand {
     private UUID uuid = UUID.randomUUID();
 
     private String name;
+    private String email;
 
-    public RegisterUserCommand(String name) {
+    public RegisterUserCommand(String name, String email) {
         this.name = name;
+        this.email = email;
     }
 
     public UUID getUuid() {
@@ -17,5 +19,9 @@ public class RegisterUserCommand {
 
     public String getName() {
         return name;
+    }
+
+    public String getEmail() {
+        return email;
     }
 }

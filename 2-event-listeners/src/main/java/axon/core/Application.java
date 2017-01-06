@@ -51,6 +51,7 @@ public class Application {
         AnnotationEventListenerAdapter.subscribe(new LoggingEventListener(), eventBus);
         //TODO Create a new listener and register the listener
         //TODO    The listener needs to depend on this.mailClient
+        AnnotationEventListenerAdapter.subscribe(new MailEventListener(this.mailClient), eventBus);
     }
 
     public <T> T execute(Object command) {

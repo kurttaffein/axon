@@ -1,6 +1,7 @@
 package axon.ui.commands;
 
 import axon.core.Application;
+import axon.core.game.command.RegisterGameCommand;
 import axon.ui.game.GameCatalog;
 import axon.ui.game.GameDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class GameCommands implements CommandMarker {
             @CliOption(key = {"steamId"}, mandatory = true)
                     String streamId
     ) {
-        application.execute(null);//TODO
+        application.execute(new RegisterGameCommand(streamId, name));
         return "Registered " + name + " with streamId " + streamId;
     }
 
@@ -36,6 +37,8 @@ public class GameCommands implements CommandMarker {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (GameDTO game : games) {
+            stringBuilder.append(game.getGameId());
+            stringBuilder.append(": ");
             stringBuilder.append(game.getName());
             stringBuilder.append("\n");
         }

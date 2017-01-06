@@ -1,6 +1,8 @@
 package axon.ui.commands;
 
 import axon.core.Application;
+import axon.core.user.command.BuyGameCommand;
+import axon.core.user.command.LinkSteamAccountCommand;
 import axon.core.user.command.RegisterUserCommand;
 import axon.core.user.command.UpdateEmailAddressCommand;
 import axon.core.user.exception.GameAlreadyBoughtException;
@@ -57,7 +59,7 @@ public class UserCommands implements CommandMarker {
     ) {
         UUID userId = context.getCurrentUUID();
 
-        application.execute(null); //TODO
+        application.execute(new LinkSteamAccountCommand(userId, steamUserId));
         return "Steam id " + steamUserId + " linked";
     }
 
@@ -72,7 +74,7 @@ public class UserCommands implements CommandMarker {
         UUID userId = context.getCurrentUUID();
 
         try {
-            application.execute(null); //TODO
+            application.execute(new BuyGameCommand(userId, gameId)); //TODO
             return "You bought " + gameName;
         } catch (GameAlreadyBoughtException e) {
             return "Could not buy " + gameName + " because you already bought it";

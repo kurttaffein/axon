@@ -1,5 +1,7 @@
 package axon.core.infrastructure.steam;
 
+import axon.core.game.event.GameRegisteredEvent;
+import org.axonframework.eventhandling.annotation.EventHandler;
 import org.springframework.shell.support.util.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -20,4 +22,5 @@ public class VirtualSteamServer implements SteamGateway {
     public String getLogsToPrint() {
         return logsToPrint;
     }
+
 }
